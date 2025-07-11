@@ -1,15 +1,9 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  gojs-editor:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: gojs-diagram-editor
+  web:
+    build: .
     ports:
-      - "5173:5173"
-    volumes:
-      - .:/app
-      - /app/node_modules
-    command: npm run dev -- --host
-  
+      - "5173:80"
+    environment:
+      - NODE_ENV=production

@@ -1,6 +1,6 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
 import * as go from 'gojs';
-import RightSidebar from './components/RightSidebar'; // make sure this path is correct
+//import RightSidebar from './components/RightSidebar'; // make sure this path is correct
 
 interface GoDiagramProps {
   diagramRef: React.MutableRefObject<go.Diagram | null>;
