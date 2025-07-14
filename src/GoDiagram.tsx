@@ -143,7 +143,15 @@ const GoDiagram: React.FC<GoDiagramProps> = ({
       const data = e.dataTransfer?.getData('application/gojs-shape');
       if (!data) return;
       const shape = JSON.parse(data);
-      const point = diagram.lastInput.documentPoint;
+
+      // Get the drop point in diagram coordinates
+      const rect = diagram.div?.getBoundingClientRect();
+      let point = diagram.position;
+      if (rect) {
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        point = diagram.transformViewToDoc(new go.Point(x, y));
+      }
 
       diagram.model.addNodeData({
         key: Date.now(),

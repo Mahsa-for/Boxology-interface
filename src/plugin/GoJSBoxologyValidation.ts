@@ -2,81 +2,100 @@ import * as go from 'gojs';
 
 // List of all patterns (update as needed)
 const allPatterns = [
-  { name: "train_model (symbol)", edges: [["Symbol", "Generate:train"], ["Generate:train", "Model"]] },
-  { name: "train_model (data)", edges: [["Data", "Generate:train"], ["Generate:train", "Model"]] },
-  { name: "transform symbol", edges: [["Symbol", "Transform"], ["Transform", "Data"]] },
-  { name: "transform symbol/data", edges: [["Symbol/Data", "Transform"], ["Transform", "Data"]] },
-  { name: "transform data", edges: [["Data", "Transform"], ["Transform", "Data"]] },
-  { name: "generate_model from actor", edges: [["Actor", "Generate:engineer"], ["Generate:engineer", "Model"]] },
-  // ...add more patterns as needed
+    { name: "train_model (symbol)", edges: [["symbol", "generate:train"], ["generate:train", "model"]] },
+    { name: "train_model (data)", edges: [["data", "generate:train"], ["generate:train", "model"]] },
+    { name: "transform symbol", edges: [["symbol", "transform"], ["transform", "data"]] },
+    { name: "transform symbol/data", edges: [["symbol/data", "transform"], ["transform", "data"]] },
+    { name: "transform data", edges: [["data", "transform"], ["transform", "data"]] },
+    { name: "generate_model from actor", edges: [["actor", "generate:engineer"], ["generate:engineer", "model"]] },
+    { name: "infer_symbol (symbol → model → symbol)", edges: [["model", "infer:deduce"], ["symbol", "infer:deduce"], ["infer:deduce", "symbol"]] },
+    { name: "infer_symbol (symbol/data → model → symbol)", edges: [["model", "infer:deduce"], ["symbol/data", "infer:deduce"], ["infer:deduce", "symbol"]] },
+    { name: "infer_symbol (data → model → symbol)", edges: [["model", "infer:deduce"], ["data", "infer:deduce"], ["infer:deduce", "symbol"]] },
+    { name: "infer_model (symbol → model → model)", edges: [["model", "infer:deduce"], ["symbol", "infer:deduce"], ["infer:deduce", "model"]] },
+    { name: "infer_model (symbol/data → model → model)", edges: [["model", "infer:deduce"], ["symbol/data", "infer:deduce"], ["infer:deduce", "model"]] },
+    { name: "infer_model (data → model → model)", edges: [["model", "infer:deduce"], ["data", "infer:deduce"], ["infer:deduce", "model"]] },
+    { name: "embed transform", edges: [["symbol", "transform:embed"], ["data", "transform:embed"], ["transform:embed", "model:semantic"]] },
+    // New rules
+    { name: "transform data type", edges: [["data", "transform"], ["transform", "data"]] },
+    { name: "generate_model from model and data ", edges: [["model", "generate"], ["data", "generate"], ["generate", "model"]] },
+    { name: "train_model (symbol)", edges: [["symbol", "generate"], ["generate", "model"]] },
+    { name: "generate model (data → symbol → model)", edges: [["data", "generate"], ["symbol", "generate"], ["generate", "model"]] },
+    { name: "generate_symbol from actor", edges: [["actor", "generate:engineer"], ["generate:engineer", "symbol"]] },
+    { name: "data-symbol transform", edges: [["symbol", "transform"], ["data", "transform"], ["transform", "data"]] },
+    { name: "actor generate model", edges: [["actor", "generate"], ["symbol", "generate"], ["generate", "model"]]},
+
+    { name: "infer symbol from more model", edges: [["model", "infer:deduce"],["data", "infer:deduce"], ["infer:deduce", "symbol"]] },
 ];
 
 // Valid next connections (update as needed)
 const validNext: Record<string, string[]> = {
-  "Symbol": ["Infer:deduce", "Generate:train", "Generate", "Generate:engineer", "Transform", "Symbol", "Symbol/Data"],
-  "Data": ["Infer:deduce", "Generate:train", "Generate", "Generate:engineer", "Transform", "Data", "Symbol/Data"],
-  "Symbol/Data": ["Infer:deduce", "Transform", "Generate", "Symbol/Data", "Generate", "Symbol", "Data", "Generate:train", "Generate:engineer"],
-  "Infer:deduce": ["Symbol", "Model", "Infer:deduce", "Data", "Symbol/Data"],
-  "Model": ["Infer:deduce", "Model", "Generate", "Generate:train", "Generate:engineer", "Transform"],
-  "Generate:train": ["Model", "Generate:train"],
-  "Generate": ["Model", "Generate", "Data", "Symbol", "Symbol/Data"],
-  "Actor": ["Generate:engineer", "Actor"],
-  "Generate:engineer": ["Model", "Generate:engineer", "Generate", "Data", "Symbol", "Symbol/Data"],
-  "Transform": ["Data", "Symbol", "Symbol/Data", "Transform", "Model"],
-  // ...add more as needed
+    "symbol": ["infer:deduce", "generate:train","generate","generate:engineer", "transform:embed", "transform", "symbol","symbol/data"],
+    "data": ["infer:deduce", "generate:train","generate","generate:engineer", "transform", "data","transform:embed","symbol/data"],
+    "symbol/data": ["infer:deduce", "transform:embed","generate", "transform", "symbol/data","generate","symbol","data", "generate:train", "generate:engineer"],
+    "infer:deduce": ["symbol", "model", "infer:deduce","data","symbol/data","model:semantic", "model:statistics"],
+    "model": ["infer:deduce", "model","generate","generate:train","generate:engineer", "model:statistics", "model:semantic","transform:embed","transform"],
+    "generate:train": ["model", "generate:train", "model:semantic", "model:statistics"],
+    "generate": ["model", "generate", "model:semantic", "model:statistics","data","symbol","symbol/data"],
+    "actor": ["generate:engineer", "actor", "generate"],
+    "generate:engineer": ["model", "generate:engineer","generate","data","symbol","symbol/data"],
+    "model:semantic": ["infer:deduce", "model","generate","generate:train","generate:engineer", "model:statistics", "model:semantic","transform:embed","transform"],
+    "model:statistics": ["infer:deduce", "model","generate","generate:train","generate:engineer", "model:statistics", "model:semantic","transform:embed","transform"],
+    "transform:embed": ["data", "transform:embed", "symbol", "transform", "model:semantic", "model:statistics", "symbol/data","model"],
+    "transform": ["data", "symbol", "symbol/data", "transform","transform:embed", "model", "model:semantic", "model:statistics"],
 };
 
 // Main validation function
 export function validateGoJSDiagram(diagram: go.Diagram): string {
-  const errors: string[] = [];
-  const edges: [string, string][] = [];
-  const nodeLabels = new Set<string>();
+    const errors: string[] = [];
+    const edges: [string, string][] = [];
+    const nodeLabels = new Set<string>();
 
-  diagram.links.each(link => {
-    const fromNode = link.fromNode;
-    const toNode = link.toNode;
-    if (!fromNode || !toNode) return;
+    diagram.links.each(link => {
+        const fromNode = link.fromNode;
+        const toNode = link.toNode;
+        if (!fromNode || !toNode) return;
 
-    const fromLabel = fromNode.data.label || fromNode.data.name;
-    const toLabel = toNode.data.label || toNode.data.name;
-    edges.push([fromLabel, toLabel]);
-    nodeLabels.add(fromLabel);
-    nodeLabels.add(toLabel);
+        // Normalize to lowercase for matching
+        const fromLabel = (fromNode.data.label || fromNode.data.name || "").toLowerCase();
+        const toLabel = (toNode.data.label || toNode.data.name || "").toLowerCase();
+        edges.push([fromLabel, toLabel]);
+        nodeLabels.add(fromLabel);
+        nodeLabels.add(toLabel);
 
-    // Check valid connection
-    if (!validNext[fromLabel] || !validNext[fromLabel].includes(toLabel)) {
-      errors.push(`❌ Invalid connection: "${fromLabel}" → "${toLabel}"`);
-    }
-  });
+        // Check valid connection (direction matters)
+        if (!validNext[fromLabel] || !validNext[fromLabel].includes(toLabel)) {
+            errors.push(`❌ Invalid connection: "${fromLabel}" → "${toLabel}"`);
+        }
+    });
 
-  // Pattern matching
-  const matchedPatterns: string[] = [];
-  allPatterns.forEach(pattern => {
-    const required = [...pattern.edges];
-    const found = required.every(([from, to]) =>
-      edges.some(([s, t]) => s === from && t === to)
-    );
-    if (found) matchedPatterns.push(pattern.name);
-  });
+    // Pattern matching (direction matters)
+    const matchedPatterns: string[] = [];
+    allPatterns.forEach(pattern => {
+        const required = pattern.edges.map(([from, to]) => [from.toLowerCase(), to.toLowerCase()]);
+        const found = required.every(([from, to]) =>
+            edges.some(([s, t]) => s === from && t === to)
+        );
+        if (found) matchedPatterns.push(pattern.name);
+    });
 
-  let summary = '';
-  if (errors.length === 0) {
-    if (matchedPatterns.length > 0) {
-      summary += "✅ Valid pattern(s) detected:\n\n";
-      matchedPatterns.forEach(p => summary += `• ${p}\n`);
+    let summary = '';
+    if (errors.length === 0) {
+        if (matchedPatterns.length > 0) {
+            summary += "✅ Valid pattern(s) detected:\n\n";
+            matchedPatterns.forEach(p => summary += `• ${p}\n`);
+        } else {
+            summary += "✅ Diagram is valid (no invalid connections), but no known pattern detected.";
+        }
     } else {
-      summary += "✅ Diagram is valid (no invalid connections), but no known pattern detected.";
+        summary += "❌ Invalid pattern or connection:\n";
+        errors.forEach(e => summary += e + "\n");
+        if (matchedPatterns.length > 0) {
+            summary += "\nPartial matches found:\n";
+            matchedPatterns.forEach(p => summary += `• ${p}\n`);
+        }
     }
-  } else {
-    summary += "❌ Invalid pattern or connection:\n";
-    errors.forEach(e => summary += e + "\n");
-    if (matchedPatterns.length > 0) {
-      summary += "\nPartial matches found:\n";
-      matchedPatterns.forEach(p => summary += `• ${p}\n`);
-    }
-  }
 
-  return summary;
+    return summary;
 }
 
 // Utility to add a button to your UI (call this in your diagram component)
