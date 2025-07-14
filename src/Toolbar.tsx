@@ -7,6 +7,7 @@ interface ToolbarProps {
   onUndo: () => void;
   onRedo: () => void;
   onAbout: () => void;
+  onValidate: () => void;
 }
 
 export default function Toolbar({
@@ -15,6 +16,7 @@ export default function Toolbar({
   onUndo,
   onRedo,
   onAbout,
+  onValidate,
 }: ToolbarProps) {
   return (
     <div className="toolbar">
@@ -24,6 +26,20 @@ export default function Toolbar({
         <span onClick={onUndo}>Undo</span>
         <span onClick={onRedo}>Redo</span>
         <span onClick={onAbout}>About</span>
+        <button
+          style={{
+            marginLeft: 10,
+            padding: '5px 10px',
+            border: '1px solid #000',
+            background: '#4CAF50',
+            color: 'white',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+          }}
+          onClick={onValidate}
+        >
+          Validate Pattern
+        </button>
       </div>
     </div>
   );

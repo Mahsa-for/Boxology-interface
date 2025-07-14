@@ -1,83 +1,93 @@
 import React from 'react';
 
-export default function LeftSidebar() {
+interface RightSidebarProps {
+  selectedData: {
+    key: string | number;
+    label: string;
+    color: string;
+    stroke: string;
+    shape: string;
+    selectedData: any;
+    diagramRef: React.RefObject<go.Diagram | null>;
+  } | null;
+  diagramRef: React.RefObject<any>;
+}
+
+export default function RightSidebar({ selectedData, diagramRef }: RightSidebarProps) {
+  const handleSidebarChange = (field: keyof NonNullable<RightSidebarProps['selectedData']>, value: string) => {
+    if (!selectedData || !diagramRef.current) return;
+    const model = diagramRef.current.model;
+    model.startTransaction('update');
+    const nodeData = model.findNodeDataForKey(selectedData.key);
+    if (nodeData) {
+      model.setDataProperty(nodeData, field, value);
+    }
+    model.commitTransaction('update');
+  };
+
   return (
-    <div style={{
-      width: 280,
-      backgroundColor: '#f9f9f9',
-      borderRight: '1px solid #ccc',
-      padding: 12,
-      fontFamily: 'Segoe UI, sans-serif',
-      fontSize: 14,
-    }}>
-      <h3 style={{ marginBottom: 8 }}>Style</h3>
-
-      {/* Color Palette */}
-      <div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 }}>
-          {['#ffffff', '#f5f5f5', '#dae8fc', '#d5e8d4', '#fff2cc', '#f8cecc', '#e1d5e7'].map((c) => (
-            <div key={c}
-              style={{
-                backgroundColor: c,
-                width: 24,
-                height: 24,
-                border: '1px solid #aaa',
-                cursor: 'pointer'
-              }}
-              title={c}
-              onClick={() => alert(`Apply fill color: ${c}`)}
+    <div
+      style={{
+        width: 240,
+        background: '#f9f9f9',
+        padding: 10,
+        overflowY: 'auto',
+        height: '100%',
+        borderRight: '1px solid #ddd',
+        position: 'relative',
+        zIndex: 1,
+      }}
+    >
+      <h3 style={{ marginTop: 0 }}>Selected Node</h3>
+      {selectedData ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <label>
+            Label:
+            <input
+              type="text"
+              value={selectedData.label}
+              onChange={(e) => handleSidebarChange('label', e.target.value)}
+              style={{ width: '100%', padding: 6, marginTop: 4 }}
             />
-          ))}
+          </label>
+          <label>
+            Fill Color:
+            <input
+              type="color"
+              value={selectedData.color}
+              onChange={(e) => handleSidebarChange('color', e.target.value)}
+              style={{ width: '100%', padding: 4, marginTop: 4 }}
+            />
+          </label>
+          <label>
+            Stroke Color:
+            <input
+              type="color"
+              value={selectedData.stroke}
+              onChange={(e) => handleSidebarChange('stroke', e.target.value)}
+              style={{ width: '100%', padding: 4, marginTop: 4 }}
+            />
+          </label>
+          <label>
+            Shape:
+            <select
+              value={selectedData.shape}
+              onChange={(e) => handleSidebarChange('shape', e.target.value)}
+              style={{ width: '100%', padding: 6, marginTop: 4 }}
+            >
+              <option value="Rectangle">Rectangle</option>
+              <option value="RoundedRectangle">Rounded Rectangle</option>
+              <option value="Diamond">Diamond</option>
+              <option value="Ellipse">Ellipse</option>
+              <option value="Triangle">Triangle</option>
+              <option value="TriangleDown">Triangle Down</option>
+              <option value="Hexagon">Hexagon</option>
+            </select>
+          </label>
         </div>
-      </div>
-
-      {/* Fill & Line Checkboxes */}
-      <div style={{ marginBottom: 12 }}>
-        <label>
-          <input type="checkbox" defaultChecked /> Fill
-        </label>
-        <br />
-        <label>
-          <input type="checkbox" defaultChecked /> Line
-        </label>
-        <br />
-        <label>
-          <input type="checkbox" /> Gradient
-        </label>
-      </div>
-
-      {/* Stroke Width + Opacity */}
-      <div style={{ marginBottom: 12 }}>
-        <label>Stroke Width:</label>
-        <input type="number" min={0} defaultValue={1} style={{ width: 50, marginLeft: 8 }} />
-        <br />
-        <label>Opacity:</label>
-        <input type="range" min={0} max={100} defaultValue={100} />
-      </div>
-
-      {/* Shape Options */}
-      <div style={{ marginBottom: 12 }}>
-        <label><input type="checkbox" /> Rounded</label><br />
-        <label><input type="checkbox" /> Glass</label><br />
-        <label><input type="checkbox" /> Shadow</label><br />
-      </div>
-
-      {/* Edit Style */}
-      <div style={{ marginTop: 12 }}>
-        <button>Edit Style</button>
-        <button style={{ marginLeft: 6 }}>Copy</button>
-      </div>
-
-      {/* Advanced */}
-      <details style={{ marginTop: 16 }}>
-        <summary><strong>Property</strong></summary>
-        <div style={{ marginTop: 8 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span>Perimeter:</span>
-            <input type="number" defaultValue={0} style={{ width: 50 }} />
-          </div>
-        </div>
-      </details>
+      ) : (
+        <p>No node selected</p>
+      )}
     </div>
   );
 }

@@ -1,11 +1,21 @@
 import type { ShapeDefinition } from '../types';
 
 export const shapes: ShapeDefinition[] = [
-  { id: 's1', label: 'Process', shape: 'Rectangle', color: '#dae8fc', group: 'General' },
-  { id: 's2', label: 'Decision', shape: 'Diamond', color: '#fff2cc', group: 'General' },
-  { id: 's3', label: 'Start', shape: 'TriangleDown', color: '#f8cecc', group: 'General' },
-  { id: 's4', label: 'End', shape: 'Ellipse', color: '#e1d5e7', group: 'General' },
-  { id: 's5', label: 'Comment', shape: 'RoundedRectangle', color: '#f5f5f5', group: 'Annotation' },
+  //Symbol and data
+  { name: 'symbol', label: 'Symbol', shape: 'Rectangle', color: '#7edc8fff', stroke: '#000000', group: 'General' },
+  { name: 'data', label: 'Data', shape: 'Rectangle', color: '#6495daff', stroke: '#000000', group: 'General' },
+  { name: 'datasymbol', label: 'Data/Symbol', shape: 'Rectangle', color: '#1094a2ff', stroke: '#000000', group: 'General' },
+  //Actor
+  { name: 'actor', label: 'Actor', shape: 'Triangle', color: '#ffaa00ff', stroke: '#000000', group: 'General' },
+  //Model
+  { name: 'model', label: 'Model', shape: 'Diamond', color: '#4dbdfdff', stroke: '#000000', group: 'General' },
+  //Process
+  { name: 'transform', label: 'Transform', shape: 'RoundedRectangle', color: '#f8cecc', stroke: '#000000', group: 'General' },
+  { name: 'infer:deduce', label: 'Infer:deduce', shape: 'RoundedRectangle', color: '#8f6967ff', stroke: '#000000', group: 'General' },
+  { name: 'generate:train', label: 'Generate:train', shape: 'RoundedRectangle', color: '#f598bfff', stroke: '#000000', group: 'General' },
+  { name: 'generate:engineer', label: 'Generate:engineer', shape: 'RoundedRectangle', color: '#f598bfff', stroke: '#000000', group: 'General' },
+  //Text
+  { name: 'comment', label: 'Comment', shape: 'RoundedRectangle', color: '#f5f5f5', stroke: '#000000', group: 'Annotation' },
 ];
 
 export type GoShape =

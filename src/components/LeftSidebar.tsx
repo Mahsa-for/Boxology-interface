@@ -15,12 +15,25 @@ function groupShapesByCategory(shapes: ShapeDefinition[]): ShapeGroupMap {
   }, {} as ShapeGroupMap);
 }
 
-export default function Sidebar() {
+interface LeftSidebarProps {
+  containers: string[];
+  onAddContainer: () => void;
+  customContainerShapes: { [key: string]: any[] };
+}
+
+export default function Sidebar({ containers, onAddContainer, customContainerShapes }: LeftSidebarProps) {
   const [customGroups, setCustomGroups] = useState<string[]>([]);
 
   const addGroup = () => {
     const name = prompt('Enter name for new shape group:');
     if (name) setCustomGroups([...customGroups, name]);
+  };
+
+  const addContainer = () => {
+    const name = prompt('Container name?');
+    if (name && !containers.includes(name)) {
+      onAddContainer();
+    }
   };
 
   const grouped = groupShapesByCategory(shapes);
@@ -59,6 +72,16 @@ export default function Sidebar() {
       {/* Render custom groups (empty for now) */}
       {customGroups.map((group) => (
         <ShapeGroup key={group} title={group} shapes={[]} />
+      ))}
+
+      <button onClick={addContainer}>＋</button>
+      {containers.map((c) => (
+        <div key={c}>
+          <div style={{ fontWeight: 'bold' }}>{c}</div>
+          {(customContainerShapes[c] || []).map((shape, idx) => (
+            <div key={idx}>{shape.label}</div>
+          ))}
+        </div>
       ))}
     </div>
   );

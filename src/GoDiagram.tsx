@@ -1,34 +1,42 @@
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
 import * as go from 'gojs';
-//import RightSidebar from './components/RightSidebar'; // make sure this path is correct
+import ContextMenu from './ContextMenu'; // <-- Import the external component
 
-interface GoDiagramProps {
-  diagramRef: React.MutableRefObject<go.Diagram | null>;
+interface ContextMenuPosition {
+  x: number;
+  y: number;
 }
 
-export default function GoDiagram({ diagramRef }: GoDiagramProps) {
+interface GoDiagramProps {
+  diagramRef: React.RefObject<go.Diagram | null>;
+  setSelectedData: Dispatch<SetStateAction<any>>;
+  setContextMenu: Dispatch<SetStateAction<ContextMenuPosition | null>>;
+  containers: string[]; // <-- Add containers prop
+}
+
+const GoDiagram: React.FC<GoDiagramProps> = ({
+  diagramRef,
+  setSelectedData,
+  setContextMenu,
+  containers // <-- Use containers from props
+}) => {
   const diagramDivRef = useRef<HTMLDivElement>(null);
-  const [selectedData, setSelectedData] = useState<{
-    key: number;
-    label: string;
-    color: string;
-    stroke: string;
-    shape: string;
-  } | null>(null);
+  const [contextMenu, setLocalContextMenu] = React.useState<ContextMenuPosition | null>(null);
+  const [selectedData, setLocalSelectedData] = React.useState<any>(null);
 
   const handleSidebarChange = (field: string, value: string) => {
-    if (!selectedData || !diagramRef.current) return;
+    if (!diagramRef.current || !selectedData) return;
 
     const model = diagramRef.current.model;
     model.startTransaction('update');
     const nodeData = model.findNodeDataForKey(selectedData.key);
-if (nodeData) {
-  model.setDataProperty(nodeData, field, value);
-}
+    if (nodeData) {
+      model.setDataProperty(nodeData, field, value);
+    }
     model.commitTransaction('update');
   };
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (!diagramDivRef.current) return;
 
     const $ = go.GraphObject.make;
@@ -64,6 +72,13 @@ if (nodeData) {
         movable: true,
         resizable: false,
         cursor: 'move',
+        contextClick: (e, obj) => {
+          const node = obj.part;
+          if (node instanceof go.Node) {
+            setSelectedData(node.data);
+            setContextMenu({ x: diagram.lastInput.viewPoint.x, y: diagram.lastInput.viewPoint.y });
+          }
+        },
       },
       new go.Binding('location', 'loc', go.Point.parse).makeTwoWay(go.Point.stringify),
       $(
@@ -140,14 +155,6 @@ if (nodeData) {
       });
     });
 
-    // Initial nodes and links
-    diagram.model = new go.GraphLinksModel(
-      [
-        { key: 0, label: 'Start', color: '#f8cecc', stroke: '#b85450', shape: 'Rectangle', loc: '0 0' },
-        { key: 1, label: 'Process', color: '#dae8fc', stroke: '#6c8ebf', shape: 'Rectangle', loc: '150 0' },
-      ],
-      [{ from: 0, to: 1 }]
-    );
 
     diagramRef.current = diagram;
 
@@ -178,73 +185,19 @@ if (nodeData) {
         flexDirection: 'row',
         alignItems: 'stretch',
       }}
-    />
-
-    {/* Inspector sidebar */}
-    <div
-      style={{
-        width: 280,
-        padding: '16px',
-        backgroundColor: '#f9f9f9',
-        borderLeft: '1px solid #ddd',
-        overflowY: 'auto',
-      }}
     >
-      <h3 style={{ marginTop: 0 }}>Selected Node</h3>
-
-      {selectedData ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <label>
-            Label:
-            <input
-              type="text"
-              value={selectedData.label}
-              onChange={(e) => handleSidebarChange('label', e.target.value)}
-              style={{ width: '100%', padding: 6, marginTop: 4 }}
-            />
-          </label>
-
-          <label>
-            Fill Color:
-            <input
-              type="color"
-              value={selectedData.color}
-              onChange={(e) => handleSidebarChange('color', e.target.value)}
-              style={{ width: '100%', padding: 4, marginTop: 4 }}
-            />
-          </label>
-
-          <label>
-            Stroke Color:
-            <input
-              type="color"
-              value={selectedData.stroke}
-              onChange={(e) => handleSidebarChange('stroke', e.target.value)}
-              style={{ width: '100%', padding: 4, marginTop: 4 }}
-            />
-          </label>
-
-          <label>
-            Shape:
-            <select
-              value={selectedData.shape}
-              onChange={(e) => handleSidebarChange('shape', e.target.value)}
-              style={{ width: '100%', padding: 6, marginTop: 4 }}
-            >
-              <option value="Rectangle">Rectangle</option>
-              <option value="RoundedRectangle">Rounded Rectangle</option>
-              <option value="Diamond">Diamond</option>
-              <option value="Ellipse">Ellipse</option>
-              <option value="Triangle">Triangle</option>
-              <option value="TriangleDown">Triangle Down</option>
-              <option value="Hexagon">Hexagon</option>
-            </select>
-          </label>
-        </div>
-      ) : (
-        <p>No node selected</p>
-      )}
+        {/* Use the imported ContextMenu */}
+        <ContextMenu
+          contextMenu={contextMenu}
+          containers={containers}
+          onMove={(container) => {
+            // You may need to define selectedData in state as well, or lift it up
+            setLocalContextMenu(null);
+          }}
+        />
+      </div>
     </div>
-  </div>
   );
-}
+};
+
+export default GoDiagram;
