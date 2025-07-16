@@ -2,6 +2,7 @@ import React, { useEffect, useRef, type Dispatch, type SetStateAction } from 're
 import * as go from 'gojs';
 import ContextMenu from './ContextMenu';
 import { setupDiagramValidation, validateGoJSDiagram } from './plugin/GoJSBoxologyValidation';
+import { mapShapeToGoJSFigure } from './utils/shapeMapping';
 
 interface ContextMenuPosition {
   x: number;
@@ -48,6 +49,26 @@ const GoDiagram: React.FC<GoDiagramProps> = ({
       diagramRef.current = null;
     }
 
+    // Define custom figures for GoJS
+    go.Shape.defineFigureGenerator("CustomHexagon", function(shape, w, h) {
+      let param1 = shape ? shape.parameter1 : NaN;
+      if (isNaN(param1)) param1 = 1; // default corner radius
+      
+      const geo = new go.Geometry();
+      const fig = new go.PathFigure(w * 0.5, 0, true); // start point at top center
+      
+      // Create hexagon points
+      fig.add(new go.PathSegment(go.PathSegment.Line, w, h * 0.25));
+      fig.add(new go.PathSegment(go.PathSegment.Line, w, h * 0.75));
+      fig.add(new go.PathSegment(go.PathSegment.Line, w * 0.5, h));
+      fig.add(new go.PathSegment(go.PathSegment.Line, 0, h * 0.75));
+      fig.add(new go.PathSegment(go.PathSegment.Line, 0, h * 0.25));
+      fig.add(new go.PathSegment(go.PathSegment.Line, w * 0.5, 0).close());
+      
+      geo.add(fig);
+      return geo;
+    });
+
     const diagram = $(go.Diagram, diagramDivRef.current, {
       'undoManager.isEnabled': true,
       allowDrop: true,
@@ -80,8 +101,7 @@ const GoDiagram: React.FC<GoDiagramProps> = ({
           }
         },
       },
-      new go.Binding('location', 'loc', go.Point.parse).makeTwoWay(go.Point.stringify),
-      $(
+      new go.Binding('location', 'loc', go.Point.parse).makeTwoWay(go.Point.stringify),        $(
         go.Shape,
         {
           strokeWidth: 1,
@@ -98,11 +118,17 @@ const GoDiagram: React.FC<GoDiagramProps> = ({
         },
         new go.Binding('fill', 'color'),
         new go.Binding('stroke', 'stroke'),
-        new go.Binding('figure', 'shape'),
+        new go.Binding('figure', 'shape', (shapeType) => {
+          const figure = mapShapeToGoJSFigure(shapeType);
+          
+          // If the figure doesn't exist in GoJS, use the original figure name
+          // and let GoJS handle the error (it will fall back to Rectangle)
+          return figure;
+        }),
         // Add size bindings for custom sizes per shape
         new go.Binding('width', 'width'),
         new go.Binding('height', 'height'),
-        new go.Binding('borderRadius', 'parameter1')
+        new go.Binding('parameter1', 'parameter1')
       ),
       $(
         go.TextBlock,
@@ -161,18 +187,33 @@ const GoDiagram: React.FC<GoDiagramProps> = ({
         const shape = JSON.parse(shapeData);
         const diagram = diagramRef.current;
         
-        // Get drop position
-        const point = diagram.transformViewToDoc(new go.Point(e.clientX, e.clientY));
+        // Get the diagram div's position to calculate correct coordinates
+        const diagramDiv = diagram.div;
+        if (!diagramDiv) return;
+        
+        const rect = diagramDiv.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        // Convert to diagram coordinates
+        const point = diagram.transformViewToDoc(new go.Point(x, y));
         
         // Create node data with all necessary properties
-        const nodeData = {
+        const nodeData: any = {
           key: `node_${Date.now()}`,
           label: shape.label,
           shape: shape.shape, // This is crucial for rendering
           color: shape.color,
           stroke: shape.stroke,
-          loc: go.Point.stringify(point)
+          loc: go.Point.stringify(point),
+          ...(shape.width && { width: shape.width }),
+          ...(shape.height && { height: shape.height }),
         };
+
+        // Handle specific shape parameters
+        if (shape.shape === 'RoundedRectangle' && shape.borderRadius) {
+          nodeData.parameter1 = parseFloat(shape.borderRadius) || 8;
+        }
         
         diagram.startTransaction("add node");
         diagram.model.addNodeData(nodeData);

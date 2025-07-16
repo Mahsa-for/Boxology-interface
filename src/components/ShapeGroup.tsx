@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import * as go from 'gojs';
 import type { ShapeDefinition } from '../types';
+import { mapShapeToGoJSFigure } from '../utils/shapeMapping';
 
 interface Props {
   title: string;
@@ -71,6 +72,7 @@ export default function ShapeGroup({ title, shapes }: Props) {
           cursor: 'grab',
           position: 'relative',
           background: 'transparent',
+          stroke: `10px solid ${shape.stroke}`, // Use stroke from shape definition
         };
         
       case 'TriangleDown':
@@ -85,6 +87,7 @@ export default function ShapeGroup({ title, shapes }: Props) {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'flex-start',
+          stroke: `10px solid ${shape.stroke}`
         };
         
       case 'Hexagon':
@@ -236,38 +239,5 @@ export default function ShapeGroup({ title, shapes }: Props) {
   );
 }
 
-// In your node template, replace the geometry binding with:
-new go.Binding("figure", "shape", (shapeType) => {
-  switch (shapeType) {
-    case 'Rectangle':
-      return "Rectangle";
-      
-    case 'RoundedRectangle':
-      return "RoundedRectangle";
-      
-    case 'Ellipse':
-    case 'Circle':
-      return "Ellipse";
-      
-    case 'Diamond':
-      return "Diamond";
-      
-    case 'Triangle':
-      return "Triangle";
-      
-    case 'TriangleDown':
-      return "TriangleDown";
-      
-    case 'Hexagon':
-      return "Hexagon"; // GoJS built-in hexagon
-      
-    case 'Pentagon':
-      return "Pentagon";
-      
-    case 'Star':
-      return "FivePointedStar";
-      
-    default:
-      return "Rectangle";
-  }
-})
+// Use the shared mapping function
+new go.Binding("figure", "shape", mapShapeToGoJSFigure)

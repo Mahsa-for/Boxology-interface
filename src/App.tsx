@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import './App.css';
 import Toolbar from './Toolbar';
 import LeftSidebar from './components/LeftSidebar';
@@ -16,6 +16,7 @@ function App() {
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [customGroups, setCustomGroups] = useState<{ [key: string]: any[] }>({});
 
+
   const handleSave = () => {
     if (diagramRef.current) {
       const json = diagramRef.current.model.toJson();
@@ -23,6 +24,8 @@ function App() {
       alert('Diagram saved!');
     }
   };
+
+
 
   const handleOpen = () => {
     const json = localStorage.getItem('diagramData');
