@@ -124,6 +124,106 @@ function App() {
     }
   }
 
+  const handleExportSVG = () => {
+    if (diagramRef.current) {
+      const svg = diagramRef.current.makeSvg({
+        scale: 1,
+        background: 'white',
+        document: document
+      });
+
+      if (!svg) {
+        alert('Failed to export SVG: Diagram rendering failed.');
+        return;
+      }
+      
+      const svgBlob = new Blob([svg.outerHTML], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `diagram_${new Date().toISOString().slice(0, 10)}.svg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+  };
+
+  const handleExportPNG = () => {
+    if (diagramRef.current) {
+      const img = diagramRef.current.makeImage({
+        scale: 2, // Higher resolution
+        background: 'white',
+        type: 'image/png',
+        details: 0.05
+      });
+
+      if (!img) {
+        alert('Failed to export PNG: Diagram rendering failed.');
+        return;
+      }
+      
+      const link = document.createElement('a');
+      link.href = img.src;
+      link.download = `diagram_${new Date().toISOString().slice(0, 10)}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  const handleExportJPG = () => {
+    if (diagramRef.current) {
+      const img = diagramRef.current.makeImage({
+        scale: 2,
+        background: 'white',
+        type: 'image/jpeg',
+        details: 0.05
+      });
+
+      if (!img) {
+        alert('Failed to export JPG: Diagram rendering failed.');
+        return;
+      }
+      
+      const link = document.createElement('a');
+      link.href = img.src;
+      link.download = `diagram_${new Date().toISOString().slice(0, 10)}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  const handleExportXML = () => {
+    if (diagramRef.current) {
+      const model = diagramRef.current.model;
+      const json = model.toJson();
+      
+      // Convert JSON to XML format
+      const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
+<diagram>
+  <metadata>
+    <created>${new Date().toISOString()}</created>
+    <tool>GoJS Diagram Editor</tool>
+  </metadata>
+  <data>
+    ${json}
+  </data>
+</diagram>`;
+      
+      const xmlBlob = new Blob([xmlContent], { type: 'application/xml;charset=utf-8' });
+      const url = URL.createObjectURL(xmlBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `diagram_${new Date().toISOString().slice(0, 10)}.xml`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+  };
+
   return (
     <div className="app" style={{ height: '100vh', width: '100vw', display: 'flex', flexDirection: 'column' }}>
       <Toolbar
@@ -133,6 +233,10 @@ function App() {
         onRedo={handleRedo}
         onAbout={handleAbout}
         onValidate={handleValidate}
+        onExportSVG={handleExportSVG}
+        onExportPNG={handleExportPNG}
+        onExportJPG={handleExportJPG}
+        onExportXML={handleExportXML}
       />
       <div
         className="main"

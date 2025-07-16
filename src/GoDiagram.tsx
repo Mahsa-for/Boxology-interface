@@ -155,27 +155,29 @@ const GoDiagram: React.FC<GoDiagramProps> = ({
 
     const handleDrop = (e: DragEvent) => {
       e.preventDefault();
-      const data = e.dataTransfer?.getData('application/gojs-shape');
-      if (!data) return;
-      const shape = JSON.parse(data);
-
-      // Get the drop point in diagram coordinates
-      const rect = diagram.div?.getBoundingClientRect();
-      let point = diagram.position;
-      if (rect) {
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        point = diagram.transformViewToDoc(new go.Point(x, y));
+      const shapeData = e.dataTransfer?.getData('application/gojs-shape');
+      
+      if (shapeData && diagramRef.current) {
+        const shape = JSON.parse(shapeData);
+        const diagram = diagramRef.current;
+        
+        // Get drop position
+        const point = diagram.transformViewToDoc(new go.Point(e.clientX, e.clientY));
+        
+        // Create node data with all necessary properties
+        const nodeData = {
+          key: `node_${Date.now()}`,
+          label: shape.label,
+          shape: shape.shape, // This is crucial for rendering
+          color: shape.color,
+          stroke: shape.stroke,
+          loc: go.Point.stringify(point)
+        };
+        
+        diagram.startTransaction("add node");
+        diagram.model.addNodeData(nodeData);
+        diagram.commitTransaction("add node");
       }
-
-      diagram.model.addNodeData({
-        key: Date.now(),
-        label: shape.label,
-        color: shape.color,
-        stroke: shape.stroke || '#999999',
-        shape: shape.shape,
-        loc: go.Point.stringify(point),
-      });
     };
 
     // Prevent browser context menu

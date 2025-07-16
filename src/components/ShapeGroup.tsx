@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import * as go from 'gojs';
 import type { ShapeDefinition } from '../types';
 
 interface Props {
@@ -20,8 +21,8 @@ export default function ShapeGroup({ title, shapes }: Props) {
     const base: React.CSSProperties = {
       background: shape.color,
       minWidth: '20px',
-      padding: '5px',
-      margin: '5px',
+      padding: '8px',
+      margin: '8px',
       display: 'flex', // Fixed: was 'relative'
       justifyContent: 'center',
       alignItems: 'center',
@@ -91,6 +92,8 @@ export default function ShapeGroup({ title, shapes }: Props) {
           ...base,
           clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)',
           width: 60,
+          height: 40,
+          stroke: shape.stroke || '#999',
         };
         
       case 'Pentagon':
@@ -129,6 +132,7 @@ export default function ShapeGroup({ title, shapes }: Props) {
         //left: '50%',
         //transform: 'translateX(-50%)',
         fontSize: '9px',
+        stroke: '#000',
         fontWeight: 'bold',
         color: '#000',
         whiteSpace: 'nowrap',
@@ -231,3 +235,39 @@ export default function ShapeGroup({ title, shapes }: Props) {
     </div>
   );
 }
+
+// In your node template, replace the geometry binding with:
+new go.Binding("figure", "shape", (shapeType) => {
+  switch (shapeType) {
+    case 'Rectangle':
+      return "Rectangle";
+      
+    case 'RoundedRectangle':
+      return "RoundedRectangle";
+      
+    case 'Ellipse':
+    case 'Circle':
+      return "Ellipse";
+      
+    case 'Diamond':
+      return "Diamond";
+      
+    case 'Triangle':
+      return "Triangle";
+      
+    case 'TriangleDown':
+      return "TriangleDown";
+      
+    case 'Hexagon':
+      return "Hexagon"; // GoJS built-in hexagon
+      
+    case 'Pentagon':
+      return "Pentagon";
+      
+    case 'Star':
+      return "FivePointedStar";
+      
+    default:
+      return "Rectangle";
+  }
+})

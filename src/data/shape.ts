@@ -1,20 +1,23 @@
-
 export const shapes: ShapeDefinition[] = [
-  //Symbol and data
-  { name: 'symbol', label: 'Symbol', shape: 'Rectangle', color: '#7edc8fff', stroke: '#000000', group: 'General' },
-  { name: 'data', label: 'Data', shape: 'Rectangle', color: '#6495daff', stroke: '#000000', group: 'General' },
-  { name: 'datasymbol', label: 'Data/Symbol', shape: 'Rectangle', color: '#1094a2ff', stroke: '#000000', group: 'General' },
-  //Actor
-  { name: 'actor', label: 'Actor', shape: 'Triangle', color: '#ffaa00ff', stroke: '#000000', group: 'General' },
-  //Model
-  { name: 'model', label: 'Model', shape: 'Diamond', color: '#4dbdfdff', stroke: '#000000', group: 'General' },
-  //Process
-  { name: 'transform', label: 'Transform', shape: 'RoundedRectangle', borderRadius: '45px', color: '#f8cecc', stroke: '#000000ff', group: 'General' },
-  { name: 'infer:deduce', label: 'Infer:deduce', shape: 'RoundedRectangle', borderRadius: '45px', color: '#8f6967ff', stroke: '#000000', group: 'General' },
-  { name: 'generate:train', label: 'Generate:train', shape: 'RoundedRectangle', borderRadius: '45px', color: '#f598bfff', stroke: '#000000', group: 'General' },
-  { name: 'generate:engineer', label: 'Generate:engineer', shape: 'RoundedRectangle', color: '#f598bfff', stroke: '#000000', group: 'General' },
-  //Text
-  { name: 'comment', label: 'Comment', shape: 'Rectangle', color: '#f5f5f5', stroke: '#000000', group: 'Annotation' },
+  //Symbol and data - Information related shapes
+  { name: 'symbol', label: 'Symbol', shape: 'Rectangle', color: '#90EE90', stroke: '#2E7D2E', group: 'General' }, // Light green - represents symbols/variables
+  { name: 'data', label: 'Data', shape: 'Rectangle', color: '#87CEEB', stroke: '#1E5F8B', group: 'General' }, // Sky blue - represents data flow
+  { name: 'datasymbol', label: 'Data/Symbol', shape: 'Rectangle', color: '#20B2AA', stroke: '#0D5F5C', group: 'General' }, // Light sea green - hybrid of data & symbol
+  
+  //Actor - Human/Agent related
+  { name: 'actor', label: 'Actor', shape: 'Triangle', color: '#FFB347', stroke: '#CC7A00', group: 'General' }, // Peach/orange - represents human actors
+  
+  //Model - AI/Intelligence related
+  { name: 'model', label: 'Model', shape: 'Hexagon', color: '#DDA0DD', stroke: '#8B4F8B', group: 'General' }, // Plum - represents AI models/intelligence
+  
+  //Process - Transformation/Action related
+  { name: 'transform', label: 'Transform', shape: 'RoundedRectangle', borderRadius: '45px', color: '#F0E68C', stroke: '#B8A600', group: 'General' }, // Khaki - represents transformation
+  { name: 'infer:deduce', label: 'Infer:deduce', shape: 'RoundedRectangle', borderRadius: '45px', color: '#D2B48C', stroke: '#8B7355', group: 'General' }, // Tan - represents reasoning/inference
+  { name: 'generate:train', label: 'Generate:train', shape: 'RoundedRectangle', borderRadius: '45px', color: '#FFA07A', stroke: '#CD5C5C', group: 'General' }, // Light salmon - represents learning/training
+  { name: 'generate:engineer', label: 'Generate:engineer', shape: 'RoundedRectangle', color: '#f067acff', stroke: '#C1307A', group: 'General' }, // Hot pink - represents engineering/creation
+  
+  //Text - Documentation related
+  { name: 'comment', label: 'Comment', shape: 'Rectangle', color: '#F5F5DC', stroke: '#A9A9A9', group: 'Annotation' }, // Beige - neutral for comments
 ];
 
 export type GoShape =

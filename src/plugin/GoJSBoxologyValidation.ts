@@ -1,222 +1,168 @@
 import * as go from 'gojs';
 
-// List of all patterns (update as needed)
-const allPatterns = [
-    { name: "train_model (symbol)", edges: [["symbol", "generate:train"], ["generate:train", "model"]] },
-    { name: "train_model (data)", edges: [["data", "generate:train"], ["generate:train", "model"]] },
-    { name: "transform symbol", edges: [["symbol", "transform"], ["transform", "data"]] },
-    { name: "transform symbol/data", edges: [["symbol/data", "transform"], ["transform", "data"]] },
-    { name: "transform data", edges: [["data", "transform"], ["transform", "data"]] },
-    { name: "generate_model from actor", edges: [["actor", "generate:engineer"], ["generate:engineer", "model"]] },
-    { name: "infer_symbol (symbol → model → symbol)", edges: [["model", "infer:deduce"], ["symbol", "infer:deduce"], ["infer:deduce", "symbol"]] },
-    { name: "infer_symbol (symbol/data → model → symbol)", edges: [["model", "infer:deduce"], ["symbol/data", "infer:deduce"], ["infer:deduce", "symbol"]] },
-    { name: "infer_symbol (data → model → symbol)", edges: [["model", "infer:deduce"], ["data", "infer:deduce"], ["infer:deduce", "symbol"]] },
-    { name: "infer_model (symbol → model → model)", edges: [["model", "infer:deduce"], ["symbol", "infer:deduce"], ["infer:deduce", "model"]] },
-    { name: "infer_model (symbol/data → model → model)", edges: [["model", "infer:deduce"], ["symbol/data", "infer:deduce"], ["infer:deduce", "model"]] },
-    { name: "infer_model (data → model → model)", edges: [["model", "infer:deduce"], ["data", "infer:deduce"], ["infer:deduce", "model"]] },
-    { name: "embed transform", edges: [["symbol", "transform:embed"], ["data", "transform:embed"], ["transform:embed", "model:semantic"]] },
-    // New rules
-    { name: "transform data type", edges: [["data", "transform"], ["transform", "data"]] },
-    { name: "generate_model from model and data ", edges: [["model", "generate"], ["data", "generate"], ["generate", "model"]] },
-    { name: "train_model (symbol)", edges: [["symbol", "generate"], ["generate", "model"]] },
-    { name: "generate model (data → symbol → model)", edges: [["data", "generate"], ["symbol", "generate"], ["generate", "model"]] },
-    { name: "generate_symbol from actor", edges: [["actor", "generate:engineer"], ["generate:engineer", "symbol"]] },
-    { name: "data-symbol transform", edges: [["symbol", "transform"], ["data", "transform"], ["transform", "data"]] },
-    { name: "actor generate model", edges: [["actor", "generate"], ["symbol", "generate"], ["generate", "model"]]},
-
-    { name: "infer symbol from more model", edges: [["model", "infer:deduce"],["data", "infer:deduce"], ["infer:deduce", "symbol"]] },
+// All valid shapes - exactly like original BoxologyValidation.js
+const shapes = [
+  "symbol",
+  "data", 
+  "symbol/data",
+  "model",
+  "actor",
+  "generate",
+  "generate:train",
+  "generate:engineer",
+  "infer:deduce",
+  "model:semantic",
+  "model:statistics",
+  "infer",
+  "deduce",
+  "transform",
+  "transform:embed",
+  "text",
+  "conditions",
+  "description",
+  "note",
+  "pre-conditions",
+  "post-condition",
+  "group",
 ];
 
-// Valid next connections (update as needed)
-const validNext: Record<string, string[]> = {
-    "symbol": ["infer:deduce", "generate:train","generate","generate:engineer", "transform:embed", "transform", "symbol","symbol/data"],
-    "data": ["infer:deduce", "generate:train","generate","generate:engineer", "transform", "data","transform:embed","symbol/data"],
-    "symbol/data": ["infer:deduce", "transform:embed","generate", "transform", "symbol/data","generate","symbol","data", "generate:train", "generate:engineer"],
-    "infer:deduce": ["symbol", "model", "infer:deduce","data","symbol/data","model:semantic", "model:statistics"],
-    "model": ["infer:deduce", "model","generate","generate:train","generate:engineer", "model:statistics", "model:semantic","transform:embed","transform"],
-    "generate:train": ["model", "generate:train", "model:semantic", "model:statistics"],
-    "generate": ["model", "generate", "model:semantic", "model:statistics","data","symbol","symbol/data"],
-    "actor": ["generate:engineer", "actor", "generate"],
-    "generate:engineer": ["model", "generate:engineer","generate","data","symbol","symbol/data"],
-    "model:semantic": ["infer:deduce", "model","generate","generate:train","generate:engineer", "model:statistics", "model:semantic","transform:embed","transform"],
-    "model:statistics": ["infer:deduce", "model","generate","generate:train","generate:engineer", "model:statistics", "model:semantic","transform:embed","transform"],
-    "transform:embed": ["data", "transform:embed", "symbol", "transform", "model:semantic", "model:statistics", "symbol/data","model"],
-    "transform": ["data", "symbol", "symbol/data", "transform","transform:embed", "model", "model:semantic", "model:statistics"],
+// List of all patterns - exactly like original BoxologyValidation.js
+const allPatterns = [
+  { name: "train_model (symbol)", edges: [["symbol", "generate:train"], ["generate:train", "model"]] },
+  { name: "train_model (data)", edges: [["data", "generate:train"], ["generate:train", "model"]] },
+  { name: "transform symbol", edges: [["symbol", "transform"], ["transform", "data"]] },
+  { name: "transform symbol/data", edges: [["symbol/data", "transform"], ["transform", "data"]] },
+  { name: "transform data", edges: [["data", "transform"], ["transform", "data"]] },
+  { name: "generate_model from actor", edges: [["actor", "generate:engineer"], ["generate:engineer", "model"]] },
+  { name: "infer_symbol (symbol → model → symbol)", edges: [["model", "infer:deduce"], ["symbol", "infer:deduce"], ["infer:deduce", "symbol"]] },
+  { name: "infer_symbol (symbol/data → model → symbol)", edges: [["model", "infer:deduce"], ["symbol/data", "infer:deduce"], ["infer:deduce", "symbol"]] },
+  { name: "infer_symbol (data → model → symbol)", edges: [["model", "infer:deduce"], ["data", "infer:deduce"], ["infer:deduce", "symbol"]] },
+  { name: "infer_model (symbol → model → model)", edges: [["model", "infer:deduce"], ["symbol", "infer:deduce"], ["infer:deduce", "model"]] },
+  { name: "infer_model (symbol/data → model → model)", edges: [["model", "infer:deduce"], ["symbol/data", "infer:deduce"], ["infer:deduce", "model"]] },
+  { name: "infer_model (data → model → model)", edges: [["model", "infer:deduce"], ["data", "infer:deduce"], ["infer:deduce", "model"]] },
+  { name: "embed transform", edges: [["symbol", "transform:embed"], ["data", "transform:embed"], ["transform:embed", "model:semantic"]] },
+  { name: "transform data type", edges: [["data", "transform"], ["transform", "data"]] },
+  { name: "generate_model from model and data", edges: [["model", "generate"], ["data", "generate"], ["generate", "model"]] },
+  { name: "train_model (symbol)", edges: [["symbol", "generate"], ["generate", "model"]] },
+  { name: "generate model (data → symbol → model)", edges: [["data", "generate"], ["symbol", "generate"], ["generate", "model"]] },
+  { name: "generate_symbol from actor", edges: [["actor", "generate:engineer"], ["generate:engineer", "symbol"]] },
+  { name: "data-symbol transform", edges: [["symbol", "transform"], ["data", "transform"], ["transform", "data"]] },
+  { name: "actor generate model", edges: [["actor", "generate"], ["symbol", "generate"], ["generate", "model"]] },
+  { name: "infer symbol from more model", edges: [["model", "infer:deduce"], ["data", "infer:deduce"], ["infer:deduce", "symbol"]] },
+];
+
+// FIXED: Complete validNext with both cases and all node types
+const validNext: { [key: string]: string[] } = {
+  // Lowercase versions (original)
+  "symbol": ["infer:deduce", "generate:train", "generate", "generate:engineer", "transform:embed", "transform", "symbol", "symbol/data"],
+  "data": ["infer:deduce", "generate:train", "generate", "generate:engineer", "transform", "data", "transform:embed", "symbol/data"],
+  "symbol/data": ["infer:deduce", "transform:embed", "generate", "transform", "symbol/data", "generate", "symbol", "data", "generate:train", "generate:engineer"],
+  "infer:deduce": ["symbol", "model", "infer:deduce", "data", "symbol/data", "model:semantic", "model:statistics"],
+  "model": ["infer:deduce", "model", "generate", "generate:train", "generate:engineer", "model:statistics", "model:semantic", "transform:embed", "transform"],
+  "generate:train": ["model", "generate:train", "model:semantic", "model:statistics"],
+  "generate": ["model", "generate", "model:semantic", "model:statistics", "data", "symbol", "symbol/data"],
+  "actor": ["generate:engineer", "actor"],
+  "generate:engineer": ["model", "generate:engineer", "generate", "data", "symbol", "symbol/data"],
+  "model:semantic": ["infer:deduce", "model", "generate", "generate:train", "generate:engineer", "model:statistics", "model:semantic", "transform:embed", "transform"],
+  "model:statistics": ["infer:deduce", "model", "generate", "generate:train", "generate:engineer", "model:statistics", "model:semantic", "transform:embed", "transform"],
+  "transform:embed": ["data", "transform:embed", "symbol", "transform", "model:semantic", "model:statistics", "symbol/data", "model"],
+  "transform": ["data", "symbol", "symbol/data", "transform", "transform:embed", "model", "model:semantic", "model:statistics"],
+  "infer": ["symbol", "model", "data", "symbol/data"],
+  "deduce": ["symbol", "model", "data", "symbol/data"],
+  
+  // Capitalized versions (for UI labels)
+  "Symbol": ["Infer:deduce", "Generate:train", "Generate", "Generate:engineer", "Transform:embed", "Transform", "Symbol", "Symbol/data"],
+  "Data": ["Infer:deduce", "Generate:train", "Generate", "Generate:engineer", "Transform", "Data", "Transform:embed", "Symbol/data"],
+  "Symbol/data": ["Infer:deduce", "Transform:embed", "Generate", "Transform", "Symbol/data", "Generate", "Symbol", "Data", "Generate:train", "Generate:engineer"],
+  "Infer:deduce": ["Symbol", "Model", "Infer:deduce", "Data", "Symbol/data", "Model:semantic", "Model:statistics"],
+  "Model": ["Infer:deduce", "Model", "Generate", "Generate:train", "Generate:engineer", "Model:statistics", "Model:semantic", "Transform:embed", "Transform"],
+  "Generate:train": ["Model", "Generate:train", "Model:semantic", "Model:statistics"],
+  "Generate": ["Model", "Generate", "Model:semantic", "Model:statistics", "Data", "Symbol", "Symbol/data"],
+  "Actor": ["Generate:engineer", "Actor"],
+  "Generate:engineer": ["Model", "Generate:engineer", "Generate", "Data", "Symbol", "Symbol/data"],
+  "Model:semantic": ["Infer:deduce", "Model", "Generate", "Generate:train", "Generate:engineer", "Model:statistics", "Model:semantic", "Transform:embed", "Transform"],
+  "Model:statistics": ["Infer:deduce", "Model", "Generate", "Generate:train", "Generate:engineer", "Model:statistics", "Model:semantic", "Transform:embed", "Transform"],
+  "Transform:embed": ["Data", "Transform:embed", "Symbol", "Transform", "Model:semantic", "Model:statistics", "Symbol/data", "Model"],
+  "Transform": ["Data", "Symbol", "Symbol/data", "Transform", "Transform:embed", "Model", "Model:semantic", "Model:statistics"],
+  "Infer": ["Symbol", "Model", "Data", "Symbol/data"],
+  "Deduce": ["Symbol", "Model", "Data", "Symbol/data"],
 };
 
-// Main validation function
-export function validateGoJSDiagram(diagram: go.Diagram): string {
-  // Always get fresh selection - never use cached data
-  const selectedCells = diagram.selection;
+// Check if a node should be ignored during validation - like original
+function isIgnorable(nodeData: any): boolean {
+  const ignoredNames = ["text", "conditions", "description", "note", "pre-conditions", "post-condition"];
+  const ignoredTypes = ["group", "swimlane"];
   
-  console.log(`🔍 Validating ${selectedCells.count} selected items`);
+  const label = (nodeData.label || nodeData.name || "").toLowerCase();
+  const shape = (nodeData.shape || "").toLowerCase();
   
-  if (selectedCells.count === 0) {
-    return "⚠️ No selection made! Please select a pattern before validation.";
-  }
-
-    // Clear any previous validation state
-    const nodes: go.Node[] = [];
-    const edges: go.Link[] = [];
-    
-    // Fresh iteration over current selection
-    selectedCells.each(part => {
-      if (part instanceof go.Node && !isIgnorable(part)) {
-        nodes.push(part);
-      } else if (part instanceof go.Link && part.fromNode && part.toNode) {
-        edges.push(part);
-      }
-    });
-  
-  // Helper to ignore certain nodes (customize as needed)
-  function isIgnorable(node: go.Node): boolean {
-    // Example: ignore nodes with category "Comment" or any other logic
-    return node.category === "Comment";
-  }
-
-  console.log(`📊 Found ${nodes.length} nodes and ${edges.length} edges`);
-
-  // Make sure all arrays are freshly created, not reused
-  const edgeNameList = edges.map(edge => [
-    edge.fromNode?.data.label || edge.fromNode?.data.name || "",
-    edge.toNode?.data.label || edge.toNode?.data.name || ""
-  ]);
-
-  const matchedPatterns: string[] = []; // Fresh array
-  const matchedNodeIds = new Set<string>(); // Fresh set
-  const errors: string[] = []; // Fresh array
-  
-  // Pattern matching (direction matters)
-  allPatterns.forEach(pattern => {
-    const required = pattern.edges.map(([from, to]) => [from.toLowerCase(), to.toLowerCase()]);
-    const found = required.every(([from, to]) =>
-      edges.some(edge => {
-        const s = (edge.fromNode?.data.label || edge.fromNode?.data.name || "").toLowerCase();
-        const t = (edge.toNode?.data.label || edge.toNode?.data.name || "").toLowerCase();
-        return s === from && t === to;
-      })
-    );
-    if (found) matchedPatterns.push(pattern.name);
-  });
-
-  let summary = '';
-  if (errors.length === 0) {
-      if (matchedPatterns.length > 0) {
-          summary += "✅ Valid pattern(s) detected:\n\n";
-          matchedPatterns.forEach(p => summary += `• ${p}\n`);
-      } else {
-          summary += "✅ Diagram is valid (no invalid connections), but no known pattern detected.";
-      }
-  } else {
-      summary += "❌ Invalid pattern or connection:\n";
-      errors.forEach(e => summary += e + "\n");
-      if (matchedPatterns.length > 0) {
-          summary += "\nPartial matches found:\n";
-          matchedPatterns.forEach(p => summary += `• ${p}\n`);
-      }
-  }
-
-  return summary;
+  return ignoredNames.includes(label) || ignoredTypes.includes(shape);
 }
 
-// Utility to add a button to your UI (call this in your diagram component)
-export function addGoJSValidationButton(diagram: go.Diagram, container: HTMLElement) {
-  const button = document.createElement("button");
-  button.textContent = "Validate Pattern";
-  button.style.marginLeft = "10px";
-  button.style.padding = "5px 10px";
-  button.style.border = "1px solid #000";
-  button.style.background = "#4CAF50";
-  button.style.color = "white";
-  button.style.cursor = "pointer";
-  button.style.fontWeight = "bold";
-  button.onclick = () => {
-    const result = validateGoJSDiagram(diagram);
-    alert(result);
-  };
-  container.appendChild(button);
+// FIXED: Get the correct node label with case normalization
+function getNodeLabel(nodeData: any): string {
+  return (nodeData.label || nodeData.name || "").trim();
 }
 
-// Setup validation listeners on diagram creation - like the original BoxologyValidation.js
-export function setupDiagramValidation(diagram: go.Diagram): void {
-  console.log("✅ GoJS Boxology Plugin Loading...");
+// FIXED: Check if connection is valid (handle case variations)
+function isValidConnection(source: string, target: string): boolean {
+  // Try exact match first
+  if (validNext[source] && validNext[source].includes(target)) {
+    return true;
+  }
   
-  // Add listener for when links are drawn (equivalent to CELL_CONNECTED in mxGraph)
-  diagram.addDiagramListener("LinkDrawn", (e) => {
-    const link = e.subject as go.Link;
-    if (!link || !link.fromNode || !link.toNode) return;
-
-    const source = (link.fromNode.data.label || link.fromNode.data.name || "").toLowerCase();
-    const target = (link.toNode.data.label || link.toNode.data.name || "").toLowerCase();
-
-    // Check if connection is valid using validNext rules
-    if (!validNext[source] || !validNext[source].includes(target)) {
-      alert(`❌ Invalid connection! "${source}" → "${target}" will be removed.`);
-      diagram.startTransaction("remove invalid link");
-      diagram.remove(link);
-      diagram.commitTransaction("remove invalid link");
-      return;
-    }
-
-    // If same name nodes are connected, merge them (like original BoxologyValidation.js)
-    if (source === target) {
-      mergeIdenticalNodes(diagram, link);
-    }
-  });
-
-  // Add listener for link relinking
-  diagram.addDiagramListener("LinkRelinked", (e) => {
-    const link = e.subject as go.Link;
-    if (!link || !link.fromNode || !link.toNode) return;
-
-    const source = (link.fromNode.data.label || link.fromNode.data.name || "").toLowerCase();
-    const target = (link.toNode.data.label || link.toNode.data.name || "").toLowerCase();
-
-    if (!validNext[source] || !validNext[source].includes(target)) {
-      alert(`❌ Invalid connection! "${source}" → "${target}" will be removed.`);
-      diagram.startTransaction("remove invalid relink");
-      diagram.remove(link);
-      diagram.commitTransaction("remove invalid relink");
-    }
-  });
-
-  console.log("✅ GoJS Boxology Plugin Loaded Successfully");
+  // Try lowercase match
+  const sourceLower = source.toLowerCase();
+  const targetLower = target.toLowerCase();
+  if (validNext[sourceLower] && validNext[sourceLower].includes(targetLower)) {
+    return true;
+  }
+  
+  // Try capitalized match
+  const sourceCapital = source.charAt(0).toUpperCase() + source.slice(1).toLowerCase();
+  const targetCapital = target.charAt(0).toUpperCase() + target.slice(1).toLowerCase();
+  if (validNext[sourceCapital] && validNext[sourceCapital].includes(targetCapital)) {
+    return true;
+  }
+  
+  return false;
 }
 
-// Helper function to merge identical nodes (like original BoxologyValidation.js)
-function mergeIdenticalNodes(diagram: go.Diagram, connectingLink: go.Link): void {
-  const sourceNode = connectingLink.fromNode;
-  const targetNode = connectingLink.toNode;
+// FIXED: Merge identical nodes using correct GoJS methods
+function mergeIdenticalNodes(diagram: go.Diagram, edge: go.Link): void {
+  const source = edge.fromNode;
+  const target = edge.toNode;
   
-  if (!sourceNode || !targetNode || sourceNode === targetNode) return;
+  if (!source || !target || source === target) return;
   
-  const sourceName = (sourceNode.data.label || sourceNode.data.name || "").toLowerCase();
-  const targetName = (targetNode.data.label || targetNode.data.name || "").toLowerCase();
+  const sourceName = getNodeLabel(source.data);
+  const targetName = getNodeLabel(target.data);
   
   if (sourceName === targetName) {
     diagram.startTransaction("merge identical nodes");
     
     try {
-      // Get all links connected to target node (except the connecting link)
+      // Get all links connected to target node (excluding the connecting link)
       const targetLinks: go.Link[] = [];
-      targetNode.findLinksConnected().each(link => {
-        if (link !== connectingLink) targetLinks.push(link);
+      target.findLinksConnected().each(link => {
+        if (link !== edge) targetLinks.push(link);
       });
       
-      // Reconnect target's links to source node
+      // FIXED: Use correct GoJS model property names
       targetLinks.forEach(link => {
-        if (link.fromNode === targetNode) {
-          (link.data as any).from = sourceNode.data.key;
+        if (link.fromNode === target) {
+          // Use the correct property name for GoJS links
+          diagram.model.setDataProperty(link.data, "from", source.data.key);
         }
-        if (link.toNode === targetNode) {
-          (link.data as any).to = sourceNode.data.key;
+        if (link.toNode === target) {
+          // Use the correct property name for GoJS links  
+          diagram.model.setDataProperty(link.data, "to", source.data.key);
         }
-        diagram.model.updateTargetBindings(link.data);
       });
       
       // Remove the connecting link and target node
-      diagram.remove(connectingLink);
-      diagram.remove(targetNode);
+      diagram.remove(edge);
+      diagram.remove(target);
       
       console.log(`✅ Merged identical nodes: "${sourceName}"`);
       
@@ -227,3 +173,185 @@ function mergeIdenticalNodes(diagram: go.Diagram, connectingLink: go.Link): void
     }
   }
 }
+
+// FIXED: Setup validation listeners with better error handling
+export function setupDiagramValidation(diagram: go.Diagram): void {
+  console.log("✅ GoJS Boxology Plugin Loading...");
+  
+  // Add listener for when links are drawn
+  diagram.addDiagramListener("LinkDrawn", (e) => {
+    const link = e.subject as go.Link;
+    if (!link || !link.fromNode || !link.toNode) return;
+
+    const source = getNodeLabel(link.fromNode.data);
+    const target = getNodeLabel(link.toNode.data);
+    
+    console.log(`🔗 Attempting connection: "${source}" → "${target}"`);
+
+    // Skip validation for ignorable nodes
+    if (isIgnorable(link.fromNode.data) || isIgnorable(link.toNode.data)) {
+      console.log("🔄 Skipping validation for ignorable nodes");
+      return;
+    }
+
+    // FIXED: Use improved validation function
+    if (!isValidConnection(source, target)) {
+      console.log(`❌ Invalid connection blocked: "${source}" → "${target}"`);
+      alert(`❌ Invalid connection! "${source}" → "${target}" will be removed.`);
+      
+      diagram.startTransaction("remove invalid link");
+      try {
+        diagram.remove(link);
+      } catch (error) {
+        console.error("Error removing link:", error);
+        diagram.remove(link);
+      }
+      diagram.commitTransaction("remove invalid link");
+      return;
+    }
+
+    console.log(`✅ Valid connection allowed: "${source}" → "${target}"`);
+
+    // If same name nodes are connected, merge them
+    if (source === target) {
+      console.log(`🔄 Merging identical nodes: "${source}"`);
+      mergeIdenticalNodes(diagram, link);
+    }
+  });
+
+  // Add listener for link relinking
+  diagram.addDiagramListener("LinkRelinked", (e) => {
+    const link = e.subject as go.Link;
+    if (!link || !link.fromNode || !link.toNode) return;
+
+    const source = getNodeLabel(link.fromNode.data);
+    const target = getNodeLabel(link.toNode.data);
+
+    if (isIgnorable(link.fromNode.data) || isIgnorable(link.toNode.data)) {
+      return;
+    }
+
+    if (!isValidConnection(source, target)) {
+      alert(`❌ Invalid connection! "${source}" → "${target}" will be removed.`);
+      diagram.startTransaction("remove invalid relink");
+      try {
+        diagram.remove(link);
+      } catch (error) {
+        diagram.remove(link);
+      }
+      diagram.commitTransaction("remove invalid relink");
+    }
+  });
+
+  console.log("✅ GoJS Boxology Plugin Loaded Successfully");
+}
+
+// The function which checks validation for each pattern separately
+export function validateGoJSDiagram(diagram: go.Diagram): string {
+  const selectedCells = diagram.selection;
+  if (selectedCells.count === 0) {
+    return "⚠️ No selection made! Please select a pattern before validation.";
+  }
+
+  // Filter relevant nodes and edges
+  const nodes: go.Node[] = [];
+  const edges: go.Link[] = [];
+  
+  selectedCells.each(part => {
+    if (part instanceof go.Node && !isIgnorable(part.data)) {
+      nodes.push(part);
+    } else if (part instanceof go.Link && part.fromNode && part.toNode) {
+      edges.push(part);
+    }
+  });
+
+  console.log(`🔍 Validating ${nodes.length} nodes and ${edges.length} edges`);
+
+  // Extract edge names as [sourceName, targetName] - FIXED: normalize to lowercase
+  const edgeNameList = edges.map(edge => {
+    const source = getNodeLabel(edge.fromNode!.data).toLowerCase();
+    const target = getNodeLabel(edge.toNode!.data).toLowerCase();
+    return [source, target];
+  });
+
+  const matchedPatterns: { name: string }[] = [];
+  const matchedNodeIds = new Set<string>();
+  const matchedNodesByPattern: { [key: string]: Set<string> } = {};
+  const usedEdgeIndices = new Set<number>();
+
+  // Pattern matching logic - exactly like original
+  allPatterns.forEach(pattern => {
+    const required = [...pattern.edges];
+    const tempEdges = edgeNameList.map((edge, i) => ({ edge, i }));
+
+    while (true) {
+      const currentMatchIndices: number[] = [];
+      const involvedNodeIds = new Set<string>();
+      let stillValid = true;
+
+      for (const [from, to] of required) {
+        const match = tempEdges.find(({ edge: [s, t], i }) => 
+          s === from && t === to && !usedEdgeIndices.has(i)
+        );
+
+        if (!match) {
+          stillValid = false;
+          break;
+        }
+
+        currentMatchIndices.push(match.i);
+        if (edges[match.i].fromNode) involvedNodeIds.add(edges[match.i].fromNode!.data.key);
+        if (edges[match.i].toNode) involvedNodeIds.add(edges[match.i].toNode!.data.key);
+      }
+
+      if (!stillValid) break;
+
+      // Record the matched pattern instance
+      matchedPatterns.push({ name: pattern.name });
+      matchedNodesByPattern[pattern.name] = matchedNodesByPattern[pattern.name] || new Set();
+      currentMatchIndices.forEach(i => usedEdgeIndices.add(i));
+      involvedNodeIds.forEach(id => {
+        matchedNodeIds.add(id);
+        matchedNodesByPattern[pattern.name].add(id);
+      });
+    }
+  });
+
+  // Build result summary
+  const unmatchedNodes = nodes.filter(n => !matchedNodeIds.has(n.data.key));
+  const isolatedNodes = nodes.filter(n => {
+    let hasConnections = false;
+    n.findLinksConnected().each(() => { hasConnections = true; });
+    return !hasConnections;
+  });
+
+  if (matchedPatterns.length > 0 && unmatchedNodes.length === 0 && isolatedNodes.length === 0) {
+    let summary = "✅ Valid pattern(s) detected:\n\n";
+    for (const [pattern, nodeSet] of Object.entries(matchedNodesByPattern)) {
+      summary += `• ${pattern}\n`;
+    }
+    return summary;
+  } else {
+    let summary = "❌ Invalid pattern: Issues detected.\n\n";
+    if (matchedPatterns.length > 0) {
+      summary += "✅ Partial matches found:\n";
+      for (const [pattern, nodeSet] of Object.entries(matchedNodesByPattern)) {
+        summary += `  • ${pattern} (${nodeSet.size} nodes)\n`;
+      }
+      summary += "\n";
+    }
+    
+    if (unmatchedNodes.length > 0) {
+      summary += `❌ ${unmatchedNodes.length} unmatched nodes\n`;
+    }
+    
+    if (isolatedNodes.length > 0) {
+      summary += `❌ ${isolatedNodes.length} isolated nodes\n`;
+    }
+    
+    return summary;
+  }
+}
+
+// Export validation shapes and patterns for external use
+export { shapes as validationShapes, allPatterns as validationPatterns, validNext as validationRules };

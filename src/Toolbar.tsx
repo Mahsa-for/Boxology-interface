@@ -1,13 +1,17 @@
 import React from 'react';
 import './Toolbar.css';
 
-interface ToolbarProps {
+export interface ToolbarProps {
   onOpen: () => void;
   onSave: () => void;
   onUndo: () => void;
   onRedo: () => void;
   onAbout: () => void;
   onValidate: () => void;
+  onExportSVG: () => void;
+  onExportPNG: () => void;
+  onExportJPG: () => void;
+  onExportXML: () => void;
 }
 
 export default function Toolbar({
@@ -17,28 +21,90 @@ export default function Toolbar({
   onRedo,
   onAbout,
   onValidate,
+  onExportSVG,
+  onExportPNG,
+  onExportJPG,
+  onExportXML,
 }: ToolbarProps) {
   return (
     <div className="toolbar">
       <div className="toolbar-group">
-        <span onClick={onOpen}>Open</span>
-        <span onClick={onSave}>Save</span>
-        <span onClick={onUndo}>Undo</span>
-        <span onClick={onRedo}>Redo</span>
-        <span onClick={onAbout}>About</span>
+        <button 
+          className="toolbar-button"
+          onClick={onOpen}
+          title="Open diagram"
+        >
+          📁 Open
+        </button>
+        <button 
+          className="toolbar-button"
+          onClick={onSave}
+          title="Save diagram"
+        >
+          💾 Save
+        </button>
+        <button 
+          className="toolbar-button"
+          onClick={onUndo}
+          title="Undo last action"
+        >
+          ↶ Undo
+        </button>
+        <button 
+          className="toolbar-button"
+          onClick={onRedo}
+          title="Redo last action"
+        >
+          ↷ Redo
+        </button>
+        <button 
+          className="toolbar-button"
+          onClick={onAbout}
+          title="About this application"
+        >
+          ℹ️ About
+        </button>
         <button
+          className="toolbar-button validate-button"
+          onClick={onValidate}
+          title="Validate selected pattern"
           style={{
-            marginLeft: 10,
-            padding: '5px 10px',
-            border: '1px solid #000',
+            marginLeft: '10px',
             background: '#4CAF50',
             color: 'white',
-            cursor: 'pointer',
             fontWeight: 'bold',
+            border: '2px solid #45a049',
           }}
-          onClick={onValidate}
         >
-          Validate Pattern
+          ✓ Validate Pattern
+        </button>
+        <button
+          className="toolbar-button export-button"
+          onClick={onExportSVG}
+          title="Export diagram as SVG"
+        >
+          📤 SVG
+        </button>
+        <button
+          className="toolbar-button export-button"
+          onClick={onExportPNG}
+          title="Export diagram as PNG"
+        >
+          📤 PNG
+        </button>
+        <button
+          className="toolbar-button export-button"
+          onClick={onExportJPG}
+          title="Export diagram as JPG"
+        >
+          📤 JPG
+        </button>
+        <button
+          className="toolbar-button export-button"
+          onClick={onExportXML}
+          title="Export diagram as XML"
+        >
+          📤 XML
         </button>
       </div>
     </div>
