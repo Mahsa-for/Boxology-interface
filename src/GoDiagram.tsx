@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
 import * as go from 'gojs';
-import ContextMenu from './ContextMenu'; // <-- Import the external component
+import ContextMenu from './ContextMenu';
+import { setupDiagramValidation, validateGoJSDiagram } from './plugin/GoJSBoxologyValidation';
 
 interface ContextMenuPosition {
   x: number;
@@ -192,6 +193,9 @@ const GoDiagram: React.FC<GoDiagramProps> = ({
 
     diagramRef.current = diagram;
 
+    // Setup validation listeners
+    setupDiagramValidation(diagram);
+
     // Cleanup function
     return () => {
       if (diagramDiv) {
@@ -204,8 +208,35 @@ const GoDiagram: React.FC<GoDiagramProps> = ({
         diagramRef.current = null;
       }
     };
-  }, [diagramRef, setSelectedData, setContextMenu]);
+  }, [diagramRef, setSelectedData, setContextMenu, containers]);
   
+  const handleValidate = () => {
+    if (!diagramRef.current) {
+      alert('❌ Diagram not ready for validation.');
+      return;
+    }
+
+    const diagram = diagramRef.current;
+    const selection = diagram.selection;
+    
+    if (selection.count === 0) {
+      // Offer to validate entire diagram
+      const validateAll = confirm('No shapes selected.\n\nDo you want to:\n• OK: Validate entire diagram\n• Cancel: Select shapes first');
+      
+      if (validateAll) {
+        // Select all nodes and links for validation
+        diagram.nodes.each(node => diagram.select(node));
+        diagram.links.each(link => diagram.select(link));
+        validateGoJSDiagram(diagram);
+        diagram.clearSelection(); // Clear selection after validation
+      } else {
+        alert('Please select the pattern you want to validate and try again.');
+      }
+    } else {
+      // Validate selected pattern
+      validateGoJSDiagram(diagram);
+    }
+  };
 
  return (
   <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
