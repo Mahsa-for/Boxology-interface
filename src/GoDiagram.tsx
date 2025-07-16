@@ -70,7 +70,6 @@ const GoDiagram: React.FC<GoDiagramProps> = ({
         locationSpot: go.Spot.Center,
         selectable: true,
         movable: true,
-        resizable: false,
         cursor: 'move',
         contextClick: (e, obj) => {
           const node = obj.part;
@@ -92,7 +91,7 @@ const GoDiagram: React.FC<GoDiagramProps> = ({
         },
         new go.Binding('fill', 'color'),
         new go.Binding('stroke', 'stroke'),
-        new go.Binding('figure', 'shape')
+        new go.Binding('figure', 'shape'),
       ),
       $(
         go.TextBlock,
@@ -137,8 +136,11 @@ const GoDiagram: React.FC<GoDiagramProps> = ({
       }
     });
     // Handle drag-and-drop from sidebar
-    diagram.div?.addEventListener('dragover', (e) => e.preventDefault());
-    diagram.div?.addEventListener('drop', (e) => {
+    const handleDragOver = (e: DragEvent) => {
+      e.preventDefault();
+    };
+
+    const handleDrop = (e: DragEvent) => {
       e.preventDefault();
       const data = e.dataTransfer?.getData('application/gojs-shape');
       if (!data) return;
@@ -161,19 +163,36 @@ const GoDiagram: React.FC<GoDiagramProps> = ({
         shape: shape.shape,
         loc: go.Point.stringify(point),
       });
-    });
+    };
 
+    // Prevent browser context menu
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault(); // This prevents the browser context menu
+      return false;
+    };
+
+    const diagramDiv = diagram.div;
+    if (diagramDiv) {
+      diagramDiv.addEventListener('dragover', handleDragOver);
+      diagramDiv.addEventListener('drop', handleDrop);
+      diagramDiv.addEventListener('contextmenu', handleContextMenu); // Add this line
+    }
 
     diagramRef.current = diagram;
 
+    // Cleanup function
     return () => {
+      if (diagramDiv) {
+        diagramDiv.removeEventListener('dragover', handleDragOver);
+        diagramDiv.removeEventListener('drop', handleDrop);
+        diagramDiv.removeEventListener('contextmenu', handleContextMenu); // Add this line
+      }
       if (diagramRef.current) {
         diagramRef.current.div = null;
-        diagramRef.current.clear();
         diagramRef.current = null;
       }
     };
-  }, [diagramRef]);
+  }, [diagramRef, setSelectedData, setContextMenu]);
   
 
  return (
@@ -200,6 +219,11 @@ const GoDiagram: React.FC<GoDiagramProps> = ({
           containers={containers}
           onMove={(container) => {
             // You may need to define selectedData in state as well, or lift it up
+            setLocalContextMenu(null);
+          }}
+          onAddToGroup={(group, shape) => {
+            // Implement your logic for adding a shape to a group here
+            // For now, just close the context menu
             setLocalContextMenu(null);
           }}
         />

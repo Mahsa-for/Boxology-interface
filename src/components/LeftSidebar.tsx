@@ -73,16 +73,6 @@ export default function Sidebar({ containers, onAddContainer, customContainerSha
       {customGroups.map((group) => (
         <ShapeGroup key={group} title={group} shapes={[]} />
       ))}
-
-      <button onClick={addContainer}>＋</button>
-      {containers.map((c) => (
-        <div key={c}>
-          <div style={{ fontWeight: 'bold' }}>{c}</div>
-          {(customContainerShapes[c] || []).map((shape, idx) => (
-            <div key={idx}>{shape.label}</div>
-          ))}
-        </div>
-      ))}
     </div>
   );
 }

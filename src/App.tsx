@@ -14,6 +14,7 @@ function App() {
   const [customContainerShapes, setCustomContainerShapes] = useState<{ [key: string]: any[] }>({});
   const [selectedData, setSelectedData] = useState<any>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const [customGroups, setCustomGroups] = useState<{ [key: string]: any[] }>({});
 
   const handleSave = () => {
     if (diagramRef.current) {
@@ -59,16 +60,26 @@ function App() {
     [key: string]: any;
   }
 
-  function handleMoveNodeToContainer(containerName: string | null): void {
-    if (!selectedData || !containerName) return;
-    // Do NOT remove node from diagram
-    setCustomContainerShapes(prev => ({
-      ...prev,
-      [containerName]: [...(prev[containerName] || []), selectedData]
-    }));
+  const handleMoveNodeToContainer = (container: string | null) => {
+    // ALWAYS close the context menu first
     setContextMenu(null);
-    setSelectedData(null);
-  }
+    
+    if (container) {
+      // Handle moving node to container logic here
+      console.log('Moving node to:', container);
+      // Add your actual move logic here
+    }
+  };
+
+  const handleAddToGroup = (group: string, shape: any) => {
+    // ALWAYS close the context menu first
+    setContextMenu(null);
+    
+    if (group) {
+      console.log('Adding to group:', group);
+      // Add your actual group logic here
+    }
+  };
 
   function handleAddContainer() {
     const name = prompt('Container name?');
@@ -102,13 +113,20 @@ function App() {
         {/* Left Sidebar */}
         <div
           style={{
-            width: 240,
+            width: 300,
             minWidth: 180,
-            maxWidth: 300,
+            maxWidth: 400,
             background: '#f9f9f9',
             borderRight: '1px solid #ddd',
             height: '100%',
             overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            position: 'relative',
+            zIndex: 1, // Ensure it appears above the canvas
+            boxShadow: '0 0 5px rgba(0,0,0,0.1)',
+            boxSizing: 'content-box',
+            overflowX: 'hidden',
           }}
         >
           <LeftSidebar
@@ -134,7 +152,13 @@ function App() {
             setContextMenu={setContextMenu}
             containers={containers}
           />
-          <ContextMenu contextMenu={contextMenu} containers={containers} onMove={handleMoveNodeToContainer} />
+          <ContextMenu 
+            contextMenu={contextMenu} 
+            containers={containers} 
+            customGroups={Object.keys(customGroups)}
+            onMove={handleMoveNodeToContainer}
+            onAddToGroup={handleAddToGroup}
+          />
         </div>
         {/* Right Sidebar */}
         <div
@@ -149,7 +173,7 @@ function App() {
           }}
         >
           <RightSidebar
-            selectedData={null} // <-- Replace null with actual selected node data from GoDiagram
+            selectedData={selectedData} // <-- Replace null with actual selected node data from GoDiagram
             diagramRef={diagramRef}
           />
         </div>

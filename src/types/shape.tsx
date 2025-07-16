@@ -1,5 +1,5 @@
 export interface ShapeData {
-  id: string;
+  id?: string;
   xml: string;
   x: number;
   y: number;
