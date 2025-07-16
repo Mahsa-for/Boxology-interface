@@ -19,12 +19,15 @@ export default function ShapeGroup({ title, shapes }: Props) {
   const renderShapeStyle = (shape: ShapeDefinition): React.CSSProperties => {
     const base: React.CSSProperties = {
       background: shape.color,
+      minWidth: '20px',
+      padding: '5px',
+      margin: '5px',
       display: 'flex', // Fixed: was 'relative'
       justifyContent: 'center',
       alignItems: 'center',
       fontSize: 10,
-      fontWeight: 'bold',
-      border: `2px solid ${shape.stroke || '#999'}`,
+      //fontWeight: 'bold',
+      border: `1px solid ${shape.stroke || '#999'}`,
       cursor: 'grab',
       position: 'relative',
       color: '#000',
@@ -59,10 +62,10 @@ export default function ShapeGroup({ title, shapes }: Props) {
         
       case 'Triangle':
         return {
-          width: '5px',
-          height: '15px',
-          borderLeft: '35px solid transparent', // Increased from 25px
-          borderRight: '35px solid transparent', // Increased from 25px
+          width: 0, // Change from '5px' to 0
+          height: 0, // Change from '15px' to 0
+          borderLeft: '35px solid transparent',
+          borderRight: '35px solid transparent', 
           borderBottom: `60px solid ${shape.color}`, // Increased from 40px
           cursor: 'grab',
           position: 'relative',
@@ -122,9 +125,9 @@ export default function ShapeGroup({ title, shapes }: Props) {
     if (shape.shape === 'Triangle' || shape.shape === 'TriangleDown') {
       return { 
         position: 'absolute',
-        bottom: '-25px', // Move label further down
-        left: '50%',
-        transform: 'translateX(-50%)',
+        //bottom: '-2px', // Move label further down
+        //left: '50%',
+        //transform: 'translateX(-50%)',
         fontSize: '9px',
         fontWeight: 'bold',
         color: '#000',
@@ -161,14 +164,15 @@ export default function ShapeGroup({ title, shapes }: Props) {
         onDragStart={(e) => handleDragStart(e, shape)}
         style={{
           position: 'relative',
-          margin: '5px',
-          padding: isTriangle ? '10px' : '0', // Reduce padding
-          minWidth: isTriangle ? '90px' : 'auto', // Increase width
-          minHeight: isTriangle ? '80px' : 'auto',
+          //margin: '2px',
+          //padding: isTriangle ? '15px 10px' : '5px', // Increase triangle padding
+          //minWidth: isTriangle ? '50px' : '80px',
+          //minHeight: isTriangle ? '100px' : '60px', // Increase triangle height
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center', // Center the triangle
+          justifyContent: isTriangle ? 'flex-start' : 'center',
+
         }}
         title={shape.label}
       >
@@ -180,12 +184,12 @@ export default function ShapeGroup({ title, shapes }: Props) {
         {isTriangle && (
           <span style={{
             position: 'absolute',
-            top: '50px', // Adjust this to center text vertically in triangle
+            bottom: '10px', // Position at bottom of container
             left: '50%',
             transform: 'translateX(-50%)',
-            fontSize: '7px',
+            fontSize: '8px',
             fontWeight: 'bold',
-            color: '#000', // black text for better contrast
+            color: '#000',
             whiteSpace: 'nowrap',
             textAlign: 'center',
             pointerEvents: 'none',

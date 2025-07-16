@@ -5,4 +5,5 @@ export interface ShapeData {
   y: number;
   width: number;
   height: number;
+  borderRadius?: number;
 }

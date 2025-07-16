@@ -1,4 +1,3 @@
-import type { ShapeDefinition } from '../types';
 
 export const shapes: ShapeDefinition[] = [
   //Symbol and data
@@ -10,12 +9,12 @@ export const shapes: ShapeDefinition[] = [
   //Model
   { name: 'model', label: 'Model', shape: 'Diamond', color: '#4dbdfdff', stroke: '#000000', group: 'General' },
   //Process
-  { name: 'transform', label: 'Transform', shape: 'RoundedRectangle', color: '#f8cecc', stroke: '#000000', group: 'General' },
-  { name: 'infer:deduce', label: 'Infer:deduce', shape: 'RoundedRectangle', color: '#8f6967ff', stroke: '#000000', group: 'General' },
-  { name: 'generate:train', label: 'Generate:train', shape: 'RoundedRectangle', color: '#f598bfff', stroke: '#000000', group: 'General' },
+  { name: 'transform', label: 'Transform', shape: 'RoundedRectangle', borderRadius: '45px', color: '#f8cecc', stroke: '#000000ff', group: 'General' },
+  { name: 'infer:deduce', label: 'Infer:deduce', shape: 'RoundedRectangle', borderRadius: '45px', color: '#8f6967ff', stroke: '#000000', group: 'General' },
+  { name: 'generate:train', label: 'Generate:train', shape: 'RoundedRectangle', borderRadius: '45px', color: '#f598bfff', stroke: '#000000', group: 'General' },
   { name: 'generate:engineer', label: 'Generate:engineer', shape: 'RoundedRectangle', color: '#f598bfff', stroke: '#000000', group: 'General' },
   //Text
-  { name: 'comment', label: 'Comment', shape: 'RoundedRectangle', color: '#f5f5f5', stroke: '#000000', group: 'Annotation' },
+  { name: 'comment', label: 'Comment', shape: 'Rectangle', color: '#f5f5f5', stroke: '#000000', group: 'Annotation' },
 ];
 
 export type GoShape =
@@ -26,4 +25,14 @@ export type GoShape =
   | 'Triangle'
   | 'TriangleDown'
   | 'Hexagon';
+
+export interface ShapeDefinition {
+  name: string;
+  label: string;
+  shape: GoShape;
+  color: string;
+  stroke: string;
+  group: string;
+  borderRadius?: '45px';
+}
 

@@ -88,10 +88,20 @@ const GoDiagram: React.FC<GoDiagramProps> = ({
           portId: '',
           fromLinkable: true,
           toLinkable: true,
+          width: 100,   // Add default width
+          height: 60,   // Add default height
+          minSize: new go.Size(60, 40),  // Add minimum size
+          maxSize: new go.Size(200, 120), // Add maximum size
+          // To round rectangle corners in GoJS, use parameter1 for the "Rectangle" shape:
+          parameter1: 360, // Default border radius for rectangles
         },
         new go.Binding('fill', 'color'),
         new go.Binding('stroke', 'stroke'),
         new go.Binding('figure', 'shape'),
+        // Add size bindings for custom sizes per shape
+        new go.Binding('width', 'width'),
+        new go.Binding('height', 'height'),
+        new go.Binding('borderRadius', 'parameter1')
       ),
       $(
         go.TextBlock,
@@ -99,6 +109,8 @@ const GoDiagram: React.FC<GoDiagramProps> = ({
           margin: 8,
           font: 'bold 12px sans-serif',
           stroke: '#333',
+          maxLines: 2,
+          overflow: go.TextBlock.OverflowEllipsis
         },
         new go.Binding('text', 'label').makeTwoWay()
       )
